@@ -5,11 +5,15 @@
 
 set -euxo pipefail
 
+brew_user=
 with_update=1
 with_python_dependencies=1
 
 while [ "${1:-}" != "" ]; do
   case "$1" in
+    --as-brew-user)
+      brew_user=as-brew-user
+      ;;
     # Do NOT call brew update during execution of this script.
     --without-update)
       with_update=0
@@ -56,10 +60,10 @@ export HOMEBREW_NO_INSTALL_CLEANUP=1
 if [[ "${with_update}" -eq 1 ]]; then
   # Note that brew update uses git, so HOMEBREW_CURL_RETRIES does not take
   # effect.
-  brew update || (sleep 30; brew update)
+  brew $brew_user update || (sleep 30; brew $brew_user update)
 fi
 
-brew bundle --file="${BASH_SOURCE%/*}/Brewfile-binary"
+brew bundle --file="$(realpath "${BASH_SOURCE%/*}/Brewfile-binary")"
 
 if ! command -v pip3.14 &>/dev/null; then
   echo 'ERROR: pip3.14 is NOT installed. The post-install step for the python@3.14 formula may have failed.' >&2

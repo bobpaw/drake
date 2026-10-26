@@ -7,9 +7,14 @@ set -euxo pipefail
 
 binary_args=(--without-python-dependencies)
 developer=0
+brew_user=
 
 while [ "${1:-}" != "" ]; do
   case "$1" in
+    --as-brew-user)
+      binary_args+=(--as-brew-user)
+      brew_user=as-brew-user
+      ;;
     --developer)
       developer=1
       ;;
@@ -36,12 +41,12 @@ source "${BASH_SOURCE%/*}/install_prereqs_binary.sh" "${binary_args[@]:0}"
 
 # ================================ Build prereqs ===============================
 
-brew bundle --file="${BASH_SOURCE%/*}/Brewfile-build"
+brew $brew_user bundle --file="$(realpath "${BASH_SOURCE%/*}/Brewfile-build")"
 
 # ============================== Developer prereqs =============================
 
 if [[ "${developer}" -eq 1 ]]; then
-  brew bundle --file="${BASH_SOURCE%/*}/Brewfile-developer"
+  brew $brew_user bundle --file="$(realpath "${BASH_SOURCE%/*}/Brewfile-developer")"
 fi
 
 # ================================== Finished ==================================
